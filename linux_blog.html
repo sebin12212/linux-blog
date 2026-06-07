@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Linux 명령어 정리</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --green: #39d353;
+      --cyan: #58a6ff;
+      --yellow: #e3b341;
+      --red: #f85149;
+      --purple: #bc8cff;
+      --text: #c9d1d9;
+      --muted: #8b949e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      min-height: 100vh;
+      padding: 0 0 80px 0;
+    }
+
+    /* 헤더 */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0 30px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--green), var(--cyan), var(--purple));
+    }
+
+    .terminal-badge {
+      display: inline-block;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--green);
+      margin-bottom: 16px;
+    }
+
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    header h1 span { color: var(--green); }
+
+    header p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    /* 메인 */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 20px 0;
+    }
+
+    /* 섹션 */
+    .section {
+      margin-bottom: 50px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+    .section:nth-child(5) { animation-delay: 0.5s; }
+    .section:nth-child(6) { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title .icon {
+      font-size: 1.2rem;
+    }
+
+    .section-title .tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: rgba(57,211,83,0.15);
+      color: var(--green);
+      border: 1px solid rgba(57,211,83,0.3);
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: auto;
+    }
+
+    /* 테이블 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    thead tr {
+      background: rgba(48,54,61,0.6);
+    }
+
+    th {
+      text-align: left;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-weight: 400;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(48,54,61,0.5);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td { background: rgba(48,54,61,0.4); }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      background: rgba(110,118,129,0.1);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      color: var(--cyan);
+    }
+
+    .desc { color: var(--text); }
+    .example { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+    /* 권한 박스 */
+    .perm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .perm-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .perm-box h4 {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+
+    .perm-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+
+    .perm-char {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    .r { background: rgba(88,166,255,0.15); color: var(--cyan); border: 1px solid rgba(88,166,255,0.3); }
+    .w { background: rgba(227,179,65,0.15); color: var(--yellow); border: 1px solid rgba(227,179,65,0.3); }
+    .x { background: rgba(57,211,83,0.15); color: var(--green); border: 1px solid rgba(57,211,83,0.3); }
+    .none { background: rgba(139,148,158,0.1); color: var(--muted); border: 1px solid var(--border); }
+
+    /* 터미널 블록 */
+    .terminal {
+      background: #010409;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .terminal-header {
+      background: var(--surface);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #ffbd2e; }
+    .dot.green { background: #28ca41; }
+
+    .terminal-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: 6px;
+    }
+
+    .terminal-body {
+      padding: 16px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .prompt { color: var(--green); }
+    .cmd { color: #fff; }
+    .out { color: var(--muted); }
+    .comment { color: #444c56; }
+
+    /* 팁 박스 */
+    .tip {
+      background: rgba(57,211,83,0.05);
+      border: 1px solid rgba(57,211,83,0.2);
+      border-left: 3px solid var(--green);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .tip strong { color: var(--green); }
+
+    /* 푸터 */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 30px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    footer span { color: var(--green); }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.6rem; }
+      .perm-grid { grid-template-columns: 1fr; }
+      td, th { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="terminal-badge">$ man linux-commands</div>
+  <h1>🐧 Linux <span>명령어</span> 정리</h1>
+  <p>동국대학교 컴퓨터공학과 · 이세빈</p>
+</header>
+
+<main>
+
+  <!-- 파일 및 디렉토리 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">📁</span> 파일 및 디렉토리
+      <span class="tag">기본</span>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>ls</code></td><td class="desc">파일 목록 출력</td><td class="example">ls -al</td></tr>
+        <tr><td><code>cd</code></td><td class="desc">디렉토리 이동</td><td class="example">cd /home</td></tr>
+        <tr><td><code>pwd</code></td><td class="desc">현재 경로 출력</td><td class="example">pwd</td></tr>
+        <tr><td><code>mkdir</code></td><td class="desc">디렉토리 생성</td><td class="example">mkdir test</td></tr>
+        <tr><td><code>rmdir</code></td><td class="desc">빈 디렉토리 삭제</td><td class="example">rmdir test</td></tr>
+        <tr><td><code>rm</code></td><td class="desc">파일/디렉토리 삭제</td><td class="example">rm -rf test</td></tr>
+        <tr><td><code>cp</code></td><td class="desc">파일 복사</td><td class="example">cp a.txt b.txt</td></tr>
+        <tr><td><code>mv</code></td><td class="desc">파일 이동 / 이름 변경</td><td class="example">mv a.txt b.txt</td></tr>
+        <tr><td><code>touch</code></td><td class="desc">빈 파일 생성</td><td class="example">touch file.txt</td></tr>
+        <tr><td><code>find</code></td><td class="desc">파일 검색</td><td class="example">find . -name "*.txt"</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">💡 <strong>Tip:</strong> <code>ls -al</code> 은 숨김 파일까지 포함한 전체 목록을 자세히 보여줘요.</div>
+  </div>
+
+  <!-- 파일 내용 확인 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">📄</span> 파일 내용 확인
+      <span class="tag">기본</span>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>cat</code></td><td class="desc">파일 전체 내용 출력</td><td class="example">cat file.txt</td></tr>
+        <tr><td><code>head</code></td><td class="desc">파일 앞부분 출력</td><td class="example">head -5 file.txt</td></tr>
+        <tr><td><code>tail</code></td><td class="desc">파일 뒷부분 출력</td><td class="example">tail -5 file.txt</td></tr>
+        <tr><td><code>less</code></td><td class="desc">페이지 단위로 보기</td><td class="example">less file.txt</td></tr>
+        <tr><td><code>grep</code></td><td class="desc">문자열 검색</td><td class="example">grep "hello" file.txt</td></tr>
+        <tr><td><code>wc</code></td><td class="desc">줄/단어/글자 수 카운트</td><td class="example">wc -l file.txt</td></tr>
+      </tbody>
+    </table>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+        <span class="terminal-title">bash</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$ </span><span class="cmd">grep "error" log.txt</span></div>
+        <div><span class="out">[ERROR] connection failed</span></div>
+        <div><span class="out">[ERROR] timeout exceeded</span></div>
+        <br>
+        <div><span class="prompt">$ </span><span class="cmd">wc -l file.txt</span></div>
+        <div><span class="out">42 file.txt</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 파일 권한 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">🔐</span> 파일 권한
+      <span class="tag">중요</span>
+    </div>
+    <div class="perm-grid">
+      <div class="perm-box">
+        <h4>권한 문자 의미</h4>
+        <div class="perm-row"><span class="perm-char r">r</span> read — 읽기 (4)</div>
+        <div class="perm-row"><span class="perm-char w">w</span> write — 쓰기 (2)</div>
+        <div class="perm-row"><span class="perm-char x">x</span> execute — 실행 (1)</div>
+        <div class="perm-row"><span class="perm-char none">-</span> 권한 없음 (0)</div>
+      </div>
+      <div class="perm-box">
+        <h4>chmod 755 분해</h4>
+        <div class="perm-row">
+          <span class="perm-char r">r</span><span class="perm-char w">w</span><span class="perm-char x">x</span>
+          <span style="color:var(--muted);font-size:12px;">소유자 (7)</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-char r">r</span><span class="perm-char none">-</span><span class="perm-char x">x</span>
+          <span style="color:var(--muted);font-size:12px;">그룹 (5)</span>
+        </div>
+        <div class="perm-row">
+          <span class="perm-char r">r</span><span class="perm-char none">-</span><span class="perm-char x">x</span>
+          <span style="color:var(--muted);font-size:12px;">others (5)</span>
+        </div>
+      </div>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>chmod</code></td><td class="desc">파일 권한 변경</td><td class="example">chmod 755 file.sh</td></tr>
+        <tr><td><code>chown</code></td><td class="desc">파일 소유자 변경</td><td class="example">chown user file.txt</td></tr>
+        <tr><td><code>chgrp</code></td><td class="desc">파일 그룹 변경</td><td class="example">chgrp group file.txt</td></tr>
+        <tr><td><code>umask</code></td><td class="desc">기본 권한 마스크 설정</td><td class="example">umask 022</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 프로세스 관리 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">⚙️</span> 프로세스 관리
+      <span class="tag">중요</span>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>ps</code></td><td class="desc">실행 중인 프로세스 확인</td><td class="example">ps aux</td></tr>
+        <tr><td><code>top</code></td><td class="desc">실시간 프로세스 모니터링</td><td class="example">top</td></tr>
+        <tr><td><code>kill</code></td><td class="desc">프로세스 종료</td><td class="example">kill -9 1234</td></tr>
+        <tr><td><code>killall</code></td><td class="desc">이름으로 프로세스 종료</td><td class="example">killall firefox</td></tr>
+        <tr><td><code>bg</code></td><td class="desc">프로세스 백그라운드 실행</td><td class="example">bg %1</td></tr>
+        <tr><td><code>fg</code></td><td class="desc">프로세스 포그라운드로 전환</td><td class="example">fg %1</td></tr>
+        <tr><td><code>jobs</code></td><td class="desc">백그라운드 작업 목록</td><td class="example">jobs</td></tr>
+      </tbody>
+    </table>
+    <div class="tip">💡 <strong>Tip:</strong> <code>kill -9</code> 는 강제 종료예요. 일반 종료는 <code>kill -15</code> (SIGTERM) 를 먼저 시도해보세요.</div>
+  </div>
+
+  <!-- 네트워크 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">🌐</span> 네트워크
+      <span class="tag">심화</span>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>ping</code></td><td class="desc">네트워크 연결 확인</td><td class="example">ping google.com</td></tr>
+        <tr><td><code>ifconfig</code></td><td class="desc">네트워크 인터페이스 확인</td><td class="example">ifconfig</td></tr>
+        <tr><td><code>curl</code></td><td class="desc">URL로 데이터 전송/수신</td><td class="example">curl https://example.com</td></tr>
+        <tr><td><code>wget</code></td><td class="desc">파일 다운로드</td><td class="example">wget https://example.com/file</td></tr>
+        <tr><td><code>ssh</code></td><td class="desc">원격 서버 접속</td><td class="example">ssh user@192.168.0.1</td></tr>
+        <tr><td><code>scp</code></td><td class="desc">원격 서버로 파일 복사</td><td class="example">scp file.txt user@host:/path</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 기타 유용한 명령어 -->
+  <div class="section">
+    <div class="section-title">
+      <span class="icon">✨</span> 기타 유용한 명령어
+      <span class="tag">유틸</span>
+    </div>
+    <table>
+      <thead><tr><th>명령어</th><th>설명</th><th>예시</th></tr></thead>
+      <tbody>
+        <tr><td><code>man</code></td><td class="desc">명령어 매뉴얼 확인</td><td class="example">man ls</td></tr>
+        <tr><td><code>echo</code></td><td class="desc">문자열 출력</td><td class="example">echo "Hello"</td></tr>
+        <tr><td><code>clear</code></td><td class="desc">터미널 화면 지우기</td><td class="example">clear</td></tr>
+        <tr><td><code>history</code></td><td class="desc">명령어 히스토리</td><td class="example">history</td></tr>
+        <tr><td><code>alias</code></td><td class="desc">명령어 별칭 설정</td><td class="example">alias ll='ls -al'</td></tr>
+        <tr><td><code>sudo</code></td><td class="desc">관리자 권한으로 실행</td><td class="example">sudo apt update</td></tr>
+        <tr><td><code>df</code></td><td class="desc">디스크 사용량 확인</td><td class="example">df -h</td></tr>
+        <tr><td><code>du</code></td><td class="desc">디렉토리 용량 확인</td><td class="example">du -sh *</td></tr>
+        <tr><td><code>tar</code></td><td class="desc">파일 압축/해제</td><td class="example">tar -xvf file.tar.gz</td></tr>
+        <tr><td><code>pipe (|)</code></td><td class="desc">명령어 출력을 다음 명령어로 전달</td><td class="example">ps aux | grep java</td></tr>
+      </tbody>
+    </table>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+        <span class="terminal-title">bash — 유용한 조합 예시</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="comment"># 실행 중인 java 프로세스 찾기</span></div>
+        <div><span class="prompt">$ </span><span class="cmd">ps aux | grep java</span></div>
+        <br>
+        <div><span class="comment"># 현재 폴더에서 .txt 파일 개수 세기</span></div>
+        <div><span class="prompt">$ </span><span class="cmd">ls *.txt | wc -l</span></div>
+        <br>
+        <div><span class="comment"># 디스크 여유 공간 확인</span></div>
+        <div><span class="prompt">$ </span><span class="cmd">df -h</span></div>
+        <div><span class="out">Filesystem  Size  Used Avail Use%</span></div>
+        <div><span class="out">/dev/sda1    50G   20G   28G  42%</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <p>🐧 Written by <span>이세빈</span> · 동국대학교 컴퓨터공학과</p>
+  <p style="margin-top:6px; font-size:11px;">$ echo "끝까지 읽어줘서 고마워요 :)"</p>
+</footer>
+
+</body>
+</html>
